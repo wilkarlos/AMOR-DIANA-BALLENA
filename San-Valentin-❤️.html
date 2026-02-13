@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>San Valentín Ballenita❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Nunito:wght@400;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  /* --- FONDO ANIMADO --- */
+  body { 
+    margin: 0; padding: 0; 
+    font-family: 'Nunito', sans-serif; 
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+    width: 100vw; /* Ocupa todo el ancho */
+    overflow: hidden; /* Evita scroll bars */
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #fad0c4, #ffd1ff);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    position: relative;
+  }
+
+  /* --- BARRA DE VIDA (HP BAR) --- */
+  .hp-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 400px;
+    height: 35px;
+    background: #2d3436;
+    border: 4px solid #000;
+    border-radius: 10px;
+    overflow: hidden;
+    z-index: 10000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s;
+  }
+
+  .hp-fill {
+    height: 100%;
+    width: 100%; 
+    background: linear-gradient(90deg, #00b894, #55efc4);
+    transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+  }
+  
+  .hp-fill.critical {
+    background: linear-gradient(90deg, #d63031, #ff7675);
+    animation: pulseRed 0.3s infinite alternate;
+  }
+
+  .hp-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Press Start 2P', cursive;
+    color: white;
+    font-size: 0.7rem; /* Un poco más pequeño para asegurar que quepa en móviles */
+    text-shadow: 2px 2px #000;
+    white-space: nowrap;
+    z-index: 2;
+    width: 100%;
+    text-align: center;
+  }
+
+  @keyframes pulseRed { from { filter: brightness(1); } to { filter: brightness(1.5); } }
+
+  /* Capa de "Daño" */
+  #damage-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9990;
+    box-shadow: inset 0 0 0 0 rgba(255, 0, 0, 0); transition: box-shadow 0.1s;
+  }
+  #damage-overlay.active { box-shadow: inset 0 0 100px 50px rgba(255, 0, 0, 0.8); background: rgba(255, 0, 0, 0.2); }
+
+  /* Animaciones */
+  .hurt-shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+  .big-shake { animation: bigShake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes shake { 10%, 90% { transform: translate3d(-4px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+  @keyframes bigShake { 0% { transform: translate(0,0); } 25% { transform: translate(15px, -15px); } 50% { transform: translate(-15px, 15px); } 75% { transform: translate(15px, 15px); } 100% { transform: translate(0,0); } }
+  @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+  /* --- TARJETA --- */
+  .card {
+    background: rgba(255, 255, 255, 0.6); 
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px); 
+    border-radius: 20px; 
+    border: 1px solid rgba(255, 255, 255, 0.5); 
+    padding: 30px; 
+    text-align: center; 
+    max-width: 90%; 
+    width: 350px; 
+    position: relative; 
+    z-index: 10; 
+    transition: all 0.5s ease-in; 
+    margin-top: 50px; /* Margen superior para no chocar con la barra de vida */
+  }
+  .card.fade-out { opacity: 0; transform: scale(0.8) rotate(10deg); pointer-events: none; }
+  
+  h1 { 
+    font-family: 'Fredoka', sans-serif; 
+    color: #ff4757; 
+    font-size: 2rem; 
+    margin: 15px 0; 
+    line-height: 1.2; 
+  }
+  
+  /* Ajuste de texto para móviles muy pequeños */
+  @media (max-width: 360px) {
+    h1 { font-size: 1.5rem; }
+  }
+
+  .gif-area img { width: 100%; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+  /* --- BOTONES --- */
+  .btn-group { display: flex; justify-content: center; gap: 20px; margin-top: 25px; position: relative; min-height: 120px; align-items: center; }
+  button { width: 120px; height: 120px; border-radius: 50%; border: none; cursor: pointer; transition: transform 0.2s ease, background 0.3s; display: flex; justify-content: center; align-items: center; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.2); -webkit-tap-highlight-color: transparent; color: white; }
+
+  #btn-yes { background: #2ed573; font-family: 'Fredoka', sans-serif; z-index: 100; position: relative; animation: heartbeat 1.5s infinite; box-shadow: 0 4px 15px rgba(46, 213, 115, 0.5); }
+  #btn-yes.flashing { animation: buttonFlash 0.6s ease-out forwards; }
+  #btn-yes:hover { transform: scale(1.1); background: #26af61; }
+  #btn-yes .text { font-size: 1.3rem; line-height: 1; font-weight: 600; }
+  #btn-yes .icon { font-size: 3.3rem; margin-top: 2px; line-height: 1; }
+
+  #btn-no { background: #ff4757; position: relative; z-index: 101; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.5); transition: all 0.1s; }
+  #btn-no .emoji-face { font-size: 3.3rem; line-height: 1; margin-bottom: 2px; }
+  #btn-no .text-no { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; font-family: 'Nunito', sans-serif; }
+
+  /* PANTALLA FINAL */
+  #success { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff0f3; z-index: 9999; display: none; opacity: 0; transform: scale(0.5); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  #success.show { opacity: 1; transform: scale(1); }
+  
+  .particle { position: fixed; pointer-events: none; z-index: 99999; }
+  
+  @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  @keyframes buttonFlash { 0% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.2); filter: brightness(3); box-shadow: 0 0 50px white; } 100% { transform: scale(1); filter: brightness(1); } }
+
+  /* --- MEDIA QUERY: MODO PAISAJE O PANTALLAS BAJAS --- 
+     Esto asegura que si el celular está horizontal, todo quepa en la pantalla. */
+  @media (max-height: 600px) {
+    .card { transform: scale(0.8); margin-top: 30px; }
+    .hp-container { top: 10px; height: 25px; }
+    .hp-text { font-size: 0.6rem; }
+    h1 { font-size: 1.5rem; }
+    .btn-group { min-height: 100px; }
+    button { width: 90px; height: 90px; }
+    #btn-yes .icon, #btn-no .emoji-face { font-size: 2.2rem; }
+    #btn-yes .text, #btn-no .text-no { font-size: 0.9rem; }
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="hp-container" id="hp-container">
+    <div class="hp-fill" id="hp-fill"></div>
+    <div class="hp-text" id="hp-text">OPORTUNIDADES: ❤️❤️❤️❤️❤️</div>
+  </div>
+
+  <div id="damage-overlay"></div>
+
+  <div class="card" id="card">
+    <div class="gif-area">
+      <img src="https://media.tenor.com/OFIXhIgsMTkAAAAm/good-morning.webp" alt="Gato tierno">
+    </div>
+     
+    <h1>¿Quieres ser el San Valentin de tu Drilococo 🐊? 💘</h1>
+    
+    <div class="btn-group">
+      <button id="btn-yes" onclick="explodeAndFinish(event)">
+        <span class="text">SÍ</span>
+        <span class="icon">😍</span>
+      </button>
+      
+      <button id="btn-no" onmouseenter="handleNoInteraction()" ontouchstart="handleNoInteraction()">
+        <span class="emoji-face" id="no-emoji">😶</span>
+        <span class="text-no">NO</span>
+      </button>
+    </div>
+  </div>
+ 
+  <div id="success">
+    <img src="https://media1.tenor.com/m/D-Ti8ck_WV0AAAAd/love-coolcrocs.gif" style="width:300px; border-radius:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom:20px;">
+    <h1 style="color:#ff4757; font-size: 1.8rem; margin:0;">¡SABÍA QUE DIRIAS QUE SÍ, MÍ BALLENITA🐳! 😍</h1>
+    <p style="font-size: 1.5rem; color: #555; margin-top:10px;">AÚN QUE ESTAREMOS DE VIAJE CON LA FAMILIA, PERO ESTAREMOS JUNTOS AMORCITO! ❤️</p>
+  </div> 
+
+<script>
+  const btnNo = document.getElementById('btn-no');
+  const btnYes = document.getElementById('btn-yes');
+  const emojiSpan = document.getElementById('no-emoji');
+  const card = document.getElementById('card');
+  const success = document.getElementById('success');
+  const damageOverlay = document.getElementById('damage-overlay');
+  const hpFill = document.getElementById('hp-fill');
+  const hpText = document.getElementById('hp-text');
+  
+  const emojis = ["😢", "😭", "🥺", "😿", "💔", "😖", "😞", "😠", "😡", "😤"];
+  
+  // ESTADO DEL JUEGO
+  let currentHealth = 100; // Vida inicial
+  let hits = 0; // Golpes recibidos
+
+  // --- INTERACCIÓN CON EL NO ---
+  function handleNoInteraction() {
+    // Si ya explotó, no hacemos nada
+    if (hits >= 5) return; 
+
+    // 1. AUMENTAR CONTADOR DE GOLPES
+    hits++;
+
+    // 2. EFECTOS DE DAÑO (SIEMPRE)
+    takeDamage();
+
+    // 3. LÓGICA DE VIDA
+    if (hits < 5) {
+        // GOLPES 1 al 4: Baja vida normal 
+        currentHealth -= 17;
+        updateHpVisuals(); 
+        moveNo(); // El botón huye
+    } else {
+        // GOLPE 5 (FINAL): Sobrevives con 10%
+        currentHealth = 10; // DEJAMOS UN POQUITO DE VIDA
+        updateHpVisuals();
+        destroyNoButton(); // EL BOTÓN REVIENTA
+    }
+  }
+
+  function updateHpVisuals() {
+    hpFill.style.width = currentHealth + '%';
+    
+    // Texto de corazones
+    let heartsCount = Math.ceil(currentHealth/20);
+    let hearts = "❤️".repeat(heartsCount);
+    
+    if (currentHealth === 10) {
+        hpText.innerText = "⚠️ SOLO TE QUEDA DECIR QUE SÍ ⚠️";
+        hpFill.classList.add('critical'); // Se pone rojo parpadeante
+    } else {
+        hpText.innerText = "OPORTUNIDADES: " + hearts;
+        if(currentHealth <= 40) hpFill.classList.add('critical');
+    }
+  }
+
+  // DESTRUCCIÓN ÉPICA DEL BOTÓN NO
+  function destroyNoButton() {
+    // 1. Efecto visual de muerte
+    document.body.classList.add('big-shake');
+    setTimeout(() => document.body.classList.remove('big-shake'), 4500);
+
+    // 2. Obtener coordenadas para la explosión ANTES de ocultarlo
+    const rect = btnNo.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // 3. Ocultar el botón NO (Desaparece)
+    btnNo.style.display = 'none';
+
+    // 4. Lanzar explosión de DESTRUCCIÓN (Negra/Roja)
+    lanzarExplosionDestruccion(centerX, centerY);
+
+    // 5. El botón SÍ celebra creciendo
+    btnYes.style.transform = "scale(1.5)";
+    btnYes.style.boxShadow = "0 0 50px #2ed573";
+    setTimeout(() => btnYes.style.transform = "scale(1)", 500);
+  }
+
+  function takeDamage() {
+    damageOverlay.classList.add('active');
+    document.body.classList.add('hurt-shake');
+    setTimeout(() => {
+      damageOverlay.classList.remove('active');
+      document.body.classList.remove('hurt-shake');
+    }, 300);
+  }
+
+  function moveNo() {
+    btnNo.style.position = 'fixed'; 
+    const maxX = window.innerWidth - btnNo.offsetWidth - 20;
+    const maxY = window.innerHeight - btnNo.offsetHeight - 20;
+    const yesRect = btnYes.getBoundingClientRect();
+    let newX, newY, overlap;
+    
+    do {
+      overlap = false;
+      newX = Math.random() * maxX;
+      newY = Math.random() * maxY;
+      if (newX < 10) newX = 10;
+      if (newY < 10) newY = 10;
+      if (newX < yesRect.right + 100 && newX + btnNo.offsetWidth > yesRect.left - 100 && newY < yesRect.bottom + 100 && newY + btnNo.offsetHeight > yesRect.top - 100) {
+        overlap = true;
+      }
+    } while (overlap);
+
+    btnNo.style.left = newX + 'px';
+    btnNo.style.top = newY + 'px';
+    const emojiRandom = emojis[Math.floor(Math.random() * emojis.length)];
+    emojiSpan.innerText = emojiRandom;
+    const randomRot = Math.random() * 30 - 15;
+    btnNo.style.transform = `rotate(${randomRot}deg) scale(0.9)`;
+    setTimeout(() => btnNo.style.transform = `rotate(${randomRot}deg) scale(1)`, 200);
+  }
+
+  // --- LÓGICA DEL SÍ (VICTORIA) ---
+  function explodeAndFinish(e) {
+    btnYes.classList.add('flashing');
+    document.body.classList.add('big-shake');
+    lanzarExplosionAmor(); // Ya no necesita coordenadas, usa el centro por defecto
+
+    setTimeout(() => {
+      card.classList.add('fade-out');
+      document.getElementById('hp-container').style.opacity = '0'; // Adiós barra de vida
+      setTimeout(() => {
+        success.style.display = 'flex';
+        setTimeout(() => {
+          success.classList.add('show');
+          lanzarConfetiFinal();
+        }, 50);
+      }, 500);
+    }, 300);
+  }
+
+  // Explosión de DESTRUCCIÓN (Cuando el NO muere)
+  function lanzarExplosionDestruccion(x, y) {
+    for(let i=0; i<60; i++){
+      let p = document.createElement('div');
+      // Partículas de escombros: Fuego, Humo, Rotura
+      const tipos = ['💥', '💨', '⚫', '🔥']; 
+      p.innerHTML = tipos[Math.floor(Math.random() * tipos.length)];
+      
+      p.className = 'particle';
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.fontSize = (Math.random() * 40 + 20) + 'px';
+      
+      const angle = Math.random() * 360;
+      const velocity = Math.random() * 600 + 200;
+      
+      p.style.setProperty('--angle', angle + 'deg');
+      p.style.setProperty('--velocity', velocity + 'px');
+      p.style.setProperty('--rot', Math.random() * 360 + 'deg');
+      
+      p.style.animation = `explode 0.6s ease-out forwards`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 600);
+    }
+  } 
+   
+  // Explosión de AMOR (Cuando das al SÍ)
+  function lanzarExplosionAmor() {
+    for(let i=0; i<80; i++){
+      let p = document.createElement('div'); 
+      p.innerHTML = Math.random() > 0.5 ? '❤️' : '✨'; 
+      p.className = 'particle';
+      // CAMBIO IMPORTANTE: Usamos 50% para que salga del centro en cualquier pantalla
+      p.style.left = '50%';
+      p.style.top = '50%'; 
+      p.style.fontSize = (Math.random() * 30 + 15) + 'px';
+      
+      const angle = Math.random() * 360;
+      const velocity = Math.random() * 800 + 400;
+      
+      p.style.setProperty('--angle', angle + 'deg');
+      p.style.setProperty('--velocity', velocity + 'px');
+      p.style.setProperty('--rot', Math.random() * 360 + 'deg');
+      
+      p.style.animation = `explode 1s ease-out forwards`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1000);
+    }
+  }
+
+  function lanzarConfetiFinal() {
+    for(let i=0; i<50; i++){
+      let heart = document.createElement('div');
+      heart.innerHTML = Math.random() > 0.7 ? '💖' : '❤️';
+      heart.className = 'particle'; 
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.top = '-10vh';
+      heart.style.fontSize = (Math.random() * 30 + 20) + 'px';
+      heart.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+      heart.style.animationDelay = Math.random() * 1 + 's';
+      document.body.appendChild(heart);
+    }
+  } 
+ 
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes explode {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+      100% { 
+        transform: translate(calc(cos(var(--angle)) * var(--velocity)), calc(sin(var(--angle)) * var(--velocity))) scale(0); 
+        opacity: 0; 
+      }
+    }
+    @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  `;
+  document.head.appendChild(style);
+</script>
+
+</body>
+</html>
